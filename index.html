@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yumi karakterleri</title>
+<style>
+:root{--navy:#11142a;--lav:#b38ae5;--mint:#85dfbd}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:transparent;overflow:hidden;font-family:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-user-select:none;user-select:none}
+.stage{position:absolute;inset:0;border-radius:24px;overflow:hidden;cursor:grab;touch-action:pan-y;
+  background:radial-gradient(60% 55% at 50% 42%,#2d2458 0%,transparent 70%),linear-gradient(180deg,#141833,var(--navy))}
+.stage.drag{cursor:grabbing}
+.rail{position:absolute;left:12%;right:12%;top:5%;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#b38ae5aa,transparent)}
+.floor{position:absolute;left:15%;right:15%;bottom:13%;height:14%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(133,223,189,.22),transparent 70%)}
+.ring{position:absolute;inset:0}
+.item{position:absolute;left:50%;bottom:17%;transform-origin:50% 100%;will-change:transform,filter;transition:none}
+.item img{display:block;height:var(--h);width:auto;pointer-events:none;-webkit-user-drag:none}
+.item.logo{display:grid;place-items:center;height:var(--h);width:calc(var(--h)*.42)}
+.item.logo .card{width:100%;aspect-ratio:3/4;border-radius:22px;border:1px dashed #b38ae588;background:#1d243999;display:grid;place-items:center;align-content:center;gap:10px;color:#cfd3ea;font-size:clamp(11px,1.6vh,15px);text-align:center;padding:10px}
+.item.logo img{height:auto;width:58%}
+.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--navy) 0%,rgba(17,20,42,.7) 14%,transparent 34%,transparent 66%,rgba(17,20,42,.7) 86%,var(--navy) 100%);z-index:50}
+.info{position:absolute;left:0;right:0;bottom:4.5%;text-align:center;z-index:60;pointer-events:none}
+.name{color:#fff;font-weight:650;font-size:clamp(18px,3.6vh,32px);letter-spacing:.03em}
+.sub{color:#a7adcb;font-size:clamp(12px,1.9vh,17px);margin-top:2px}
+.dots{display:flex;justify-content:center;gap:7px;margin-top:10px;pointer-events:auto}
+.dots button{width:8px;height:8px;border-radius:4px;border:0;background:#ffffff38;cursor:pointer;transition:width .25s,background .25s}
+.dots button.on{width:24px;background:var(--mint)}
+.nav{position:absolute;top:46%;z-index:70;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff30;background:#11142acc;color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.nav:hover{background:#b38ae5}.prev{left:2.5%}.next{right:2.5%}
+.hint{position:absolute;top:8%;left:0;right:0;text-align:center;color:#8f95b5;font-size:13px;z-index:60;opacity:1;transition:opacity .6s}
+@media (max-width:560px){.nav{display:none}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage" aria-roledescription="carousel" aria-label="Yumi karakterleri">
+  <div class="rail"></div><div class="floor"></div>
+  <div class="ring" id="ring"></div>
+  <div class="shade"></div>
+  <div class="hint" id="hint">← sürükleyerek çevir →</div>
+  <button class="nav prev" id="prev" aria-label="Önceki">‹</button>
+  <button class="nav next" id="next" aria-label="Sonraki">›</button>
+  <div class="info"><div class="name" id="name"></div><div class="sub" id="sub"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+// Karakter listesi: yeni karakter eklemek için img/ altına webp koyup buraya bir satır ekle.
+const CHARS = [
+  {n:'Haru',   img:'img/haru.webp'},
+  {n:'Eddy',   img:'img/eddy.webp'},
+  {n:'Vita',   img:'img/vita.webp'},
+  {n:'Kaito',  img:'img/kaito.webp'},
+  {n:'Shiori', img:'img/shiori.webp'},
+  {n:'Vivi',   img:'img/vivi.webp'},
+  {n:'Ren',    img:'img/ren.webp'},
+  {n:'Akira',  img:'img/akira.webp'},
+  {n:'Sora',   img:'img/sora.webp'},
+  {n:'Yumi',   img:'img/yumi.webp'},
+  {n:'Modelsiz', logo:true, sub:'İstersen karaktersiz, sade bir asistan'}
+];
+const SUB = 'Kendi sesiyle konuşur';
+const AUTO_MS = 3200, RESUME_MS = 6000;
+
+const ring = document.getElementById('ring'), stage = document.getElementById('stage');
+const nameEl = document.getElementById('name'), subEl = document.getElementById('sub'), dotsEl = document.getElementById('dots');
+const N = CHARS.length;
+const els = CHARS.map((c,i) => {
+  const d = document.createElement('div'); d.className = 'item' + (c.logo ? ' logo' : '');
+  d.innerHTML = c.logo ? `<div class="card"><img src="img/yumi-logo.webp" alt=""><b style="color:#fff">Modelsiz</b><span>Karakter seçmeden de kullan</span></div>`
+                       : `<img src="${c.img}" alt="${c.n}" draggable="false">`;
+  ring.appendChild(d);
+  const b = document.createElement('button'); b.setAttribute('aria-label', c.n); b.onclick = () => { goTo(i); pauseAuto(); };
+  dotsEl.appendChild(b);
+  return d;
+});
+const dots = [...dotsEl.children];
+
+let pos = 0, target = 0, vel = 0, dragging = false, lastX = 0, lastT = 0, moved = 0;
+const wrap = d => ((d % N) + N + N/2) % N - N/2;   // -N/2..N/2
+
+function stepSize(){ const W = stage.clientWidth, h = Math.min(stage.clientHeight * 0.70, 560); return W < 560 ? W * 0.29 : Math.min(W * 0.17, h * 0.42); }
+function layout(){
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const h = Math.min(H * 0.70, 560);
+  stage.style.setProperty('--h', h + 'px');
+  const step = stepSize();
+  els.forEach((el,i) => {
+    const d = wrap(i - pos), a = Math.abs(d);
+    const x = Math.sign(d) * (a <= 1 ? a * step * 1.15 : step * 1.15 + (a - 1) * step * 0.88);
+    const s = Math.max(0.42, 1 - a * 0.2);
+    const br = Math.max(0.22, 1 - a * 0.36), sat = Math.max(0.35, 1 - a * 0.22);
+    el.style.transform = `translateX(calc(-50% + ${x}px)) translateY(${-a * h * 0.03}px) scale(${s})`;
+    el.style.filter = a < 0.05 ? 'none' : `brightness(${br}) saturate(${sat})`;
+    el.style.zIndex = String(100 - Math.round(a * 10));
+    el.style.opacity = a > (W < 560 ? 2.4 : 3.6) ? 0 : 1;
+  });
+  const c = ((Math.round(pos) % N) + N) % N;
+  if (nameEl.dataset.i !== String(c)) {
+    nameEl.dataset.i = c; nameEl.textContent = CHARS[c].n; subEl.textContent = CHARS[c].sub || SUB;
+    dots.forEach((b,i) => b.classList.toggle('on', i === c));
+  }
+}
+
+function tick(){
+  if (!dragging) {
+    if (Math.abs(vel) > 0.0005) { target = Math.round(pos + vel * 10); vel = 0; }
+    pos += (target - pos) * 0.12;
+    if (Math.abs(target - pos) < 0.0005) pos = target;
+  }
+  layout(); requestAnimationFrame(tick);
+}
+function goTo(i){ const d = wrap(i - target); target = target + d; }
+function step(k){ target = Math.round(target) + k; }
+
+// Otomatik dönüş
+let autoTimer = null, resumeTimer = null;
+function startAuto(){ stopAuto(); autoTimer = setInterval(() => step(1), AUTO_MS); }
+function stopAuto(){ clearInterval(autoTimer); autoTimer = null; }
+function pauseAuto(){ stopAuto(); clearTimeout(resumeTimer); resumeTimer = setTimeout(startAuto, RESUME_MS); hideHint(); }
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Sürükleme (fare + dokunma)
+stage.addEventListener('pointerdown', e => {
+  if (e.target.closest('button')) return;
+  dragging = true; moved = 0; lastX = e.clientX; lastT = performance.now(); vel = 0;
+  stage.classList.add('drag'); stage.setPointerCapture(e.pointerId); pauseAuto();
+});
+stage.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, now = performance.now(), dt = Math.max(1, now - lastT);
+  const stepPx = stepSize() * 1.15;
+  pos -= dx / stepPx; target = pos; vel = (-dx / stepPx) / dt * 16 * 0.6 + vel * 0.4;
+  lastX = e.clientX; lastT = now; moved += Math.abs(dx);
+});
+const end = e => { if (!dragging) return; dragging = false; stage.classList.remove('drag'); if (moved < 4) vel = 0; target = Math.round(pos + vel * 10); vel = 0; };
+stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
+stage.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { e.preventDefault(); step(e.deltaX > 0 ? 1 : -1); pauseAuto(); } }, {passive:false});
+document.getElementById('prev').onclick = () => { step(-1); pauseAuto(); };
+document.getElementById('next').onclick = () => { step(1); pauseAuto(); };
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { step(-1); pauseAuto(); } if (e.key === 'ArrowRight') { step(1); pauseAuto(); } });
+stage.addEventListener('mouseenter', stopAuto); stage.addEventListener('mouseleave', () => { clearTimeout(resumeTimer); if (!reduce) startAuto(); });
+function hideHint(){ document.getElementById('hint').style.opacity = 0; }
+setTimeout(hideHint, 4000);
+addEventListener('resize', layout);
+document.addEventListener('visibilitychange', () => document.hidden ? stopAuto() : (!reduce && startAuto()));
+
+tick(); if (!reduce) startAuto();
+</script>
+</body>
+</html>
