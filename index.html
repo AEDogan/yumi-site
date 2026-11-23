@@ -1,149 +1,89 @@
-<!doctype html>
-<html lang="tr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Yumi karakterleri</title>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yumi — Masaüstü Asistanın</title>
+<meta name="description" content="Yumi: Windows için Türkçe sesli masaüstü asistanı. Ücretsiz ve reklamsız.">
+<link rel="icon" href="gorseller/logo.png">
 <style>
-:root{--navy:#11142a;--lav:#b38ae5;--mint:#85dfbd}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:transparent;overflow:hidden;font-family:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-user-select:none;user-select:none}
-.stage{position:absolute;inset:0;border-radius:24px;overflow:hidden;cursor:grab;touch-action:pan-y;
-  background:radial-gradient(60% 55% at 50% 42%,#2d2458 0%,transparent 70%),linear-gradient(180deg,#141833,var(--navy))}
-.stage.drag{cursor:grabbing}
-.rail{position:absolute;left:12%;right:12%;top:5%;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#b38ae5aa,transparent)}
-.floor{position:absolute;left:15%;right:15%;bottom:13%;height:14%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(133,223,189,.22),transparent 70%)}
-.ring{position:absolute;inset:0}
-.item{position:absolute;left:50%;bottom:17%;transform-origin:50% 100%;will-change:transform,filter;transition:none}
-.item img{display:block;height:var(--h);width:auto;pointer-events:none;-webkit-user-drag:none}
-.item.logo{display:grid;place-items:center;height:var(--h);width:calc(var(--h)*.42)}
-.item.logo .card{width:100%;aspect-ratio:3/4;border-radius:22px;border:1px dashed #b38ae588;background:#1d243999;display:grid;place-items:center;align-content:center;gap:10px;color:#cfd3ea;font-size:clamp(11px,1.6vh,15px);text-align:center;padding:10px}
-.item.logo img{height:auto;width:58%}
-.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--navy) 0%,rgba(17,20,42,.7) 14%,transparent 34%,transparent 66%,rgba(17,20,42,.7) 86%,var(--navy) 100%);z-index:50}
-.info{position:absolute;left:0;right:0;bottom:4.5%;text-align:center;z-index:60;pointer-events:none}
-.name{color:#fff;font-weight:650;font-size:clamp(18px,3.6vh,32px);letter-spacing:.03em}
-.sub{color:#a7adcb;font-size:clamp(12px,1.9vh,17px);margin-top:2px}
-.dots{display:flex;justify-content:center;gap:7px;margin-top:10px;pointer-events:auto}
-.dots button{width:8px;height:8px;border-radius:4px;border:0;background:#ffffff38;cursor:pointer;transition:width .25s,background .25s}
-.dots button.on{width:24px;background:var(--mint)}
-.nav{position:absolute;top:46%;z-index:70;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff30;background:#11142acc;color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center;transition:background .2s}
-.nav:hover{background:#b38ae5}.prev{left:2.5%}.next{right:2.5%}
-.hint{position:absolute;top:8%;left:0;right:0;text-align:center;color:#8f95b5;font-size:13px;z-index:60;opacity:1;transition:opacity .6s}
-@media (max-width:560px){.nav{display:none}}
-</style>
-</head>
-<body>
-<div class="stage" id="stage" aria-roledescription="carousel" aria-label="Yumi karakterleri">
-  <div class="rail"></div><div class="floor"></div>
-  <div class="ring" id="ring"></div>
-  <div class="shade"></div>
-  <div class="hint" id="hint">← sürükleyerek çevir →</div>
-  <button class="nav prev" id="prev" aria-label="Önceki">‹</button>
-  <button class="nav next" id="next" aria-label="Sonraki">›</button>
-  <div class="info"><div class="name" id="name"></div><div class="sub" id="sub"></div><div class="dots" id="dots"></div></div>
-</div>
-<script>
-// Karakter listesi: yeni karakter eklemek için img/ altına webp koyup buraya bir satır ekle.
-const CHARS = [
-  {n:'Haru',   img:'img/haru.webp'},
-  {n:'Eddy',   img:'img/eddy.webp'},
-  {n:'Vita',   img:'img/vita.webp'},
-  {n:'Kaito',  img:'img/kaito.webp'},
-  {n:'Shiori', img:'img/shiori.webp'},
-  {n:'Vivi',   img:'img/vivi.webp'},
-  {n:'Ren',    img:'img/ren.webp'},
-  {n:'Akira',  img:'img/akira.webp'},
-  {n:'Sora',   img:'img/sora.webp'},
-  {n:'Yumi',   img:'img/yumi.webp'},
-  {n:'Modelsiz', logo:true, sub:'İstersen karaktersiz, sade bir asistan'}
-];
-const SUB = 'Kendi sesiyle konuşur';
-const AUTO_MS = 3200, RESUME_MS = 6000;
+:root{--navy:#11142a;--ink:#1d2439;--lav:#b38ae5;--mint:#85dfbd;--bg:#f6f5fb;--mut:#5d6380}
+*{box-sizing:border-box;margin:0}body{font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+a{color:inherit}.w{max-width:1180px;margin:0 auto;padding:0 28px}
+header{background:var(--navy);border-bottom:1px solid #ffffff12}
+header .w{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:20px;text-decoration:none}.brand img{width:34px}
+nav a{color:#c9cde3;text-decoration:none;margin-left:28px;font-size:15px}
+.hero{background:var(--navy);color:#fff;padding:64px 0 80px}
+.hero .w{display:grid;grid-template-columns:1fr 1.15fr;gap:48px;align-items:center}
+.eye{display:inline-block;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);font-weight:600;margin-bottom:18px}
+h1{font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;font-size:56px;line-height:1.05;letter-spacing:-.02em;font-weight:700}
+h1 em{font-style:normal;color:var(--lav)}
+.lead{font-size:19px;line-height:1.6;color:#c4c8de;margin:22px 0 30px;max-width:520px}
+.btn{display:inline-block;padding:14px 26px;border-radius:999px;font-weight:600;text-decoration:none;font-size:16px}
+.p{background:var(--lav);color:#fff}.s{border:1px solid #ffffff38;color:#fff;margin-left:10px}
+.meta{margin-top:22px;font-size:14px;color:#8f95b5}
+.hero img{width:100%;border-radius:20px}
+.pill{padding:36px 0;background:#fff;border-bottom:1px solid #e7e5f0}.pill .w{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pill div{display:flex;gap:14px;align-items:center}.pill img{width:56px}.pill b{display:block;font-size:17px}.pill span{color:var(--mut);font-size:14px}
+section.f{padding:88px 0}.h2{font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;font-size:38px;letter-spacing:-.015em;font-weight:700;text-align:center}
+.sub{text-align:center;color:var(--mut);font-size:18px;margin:12px auto 48px;max-width:640px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:#fff;border:1px solid #e7e5f0;border-radius:22px;padding:28px}.card img{width:64px;margin-bottom:14px}
+.card h3{font-size:20px;margin-bottom:8px}.card p{color:var(--mut);line-height:1.6;font-size:15.5px}
+.alt{background:#efedf8}
+.q{background:#fff;border-radius:22px;padding:26px;border:1px solid #e7e5f0}.q small{color:#8a7fb0;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+.q p{font-size:19px;margin:12px 0 10px;font-weight:600}.q span{color:var(--mut);font-size:15px;line-height:1.5}
+.dark{background:var(--navy);color:#fff}.dark .sub{color:#aab0cc}.dark img.full{width:100%;border-radius:20px;display:block}
+.cta{text-align:center;padding:90px 0;background:#1a1838}
+.cta .h2{color:#fff}.cta .sub{color:#b8bdd6}
+footer{background:#0b0d1c;color:#7d82a0;font-size:12.5px;padding:26px 0}
+footer .w{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}footer a{color:#9ea3c2;text-decoration:none;margin-left:18px}
+.car{width:100%;height:600px;border:0;border-radius:20px;display:block}
+@media(max-width:560px){.car{height:560px}}
+@media(max-width:860px){.hero .w,.grid,.pill .w{grid-template-columns:1fr}h1{font-size:40px}nav{display:none}}
+</style></head><body>
+<header><div class="w"><a class="brand" href="./"><img src="gorseller/logo.png" alt="">Yumi</a><nav><a href="#ozellikler">Özellikler</a><a href="#karakterler">Karakterler</a><a href="#indir">İndir</a></nav></div></header>
 
-const ring = document.getElementById('ring'), stage = document.getElementById('stage');
-const nameEl = document.getElementById('name'), subEl = document.getElementById('sub'), dotsEl = document.getElementById('dots');
-const N = CHARS.length;
-const els = CHARS.map((c,i) => {
-  const d = document.createElement('div'); d.className = 'item' + (c.logo ? ' logo' : '');
-  d.innerHTML = c.logo ? `<div class="card"><img src="img/yumi-logo.webp" alt=""><b style="color:#fff">Modelsiz</b><span>Karakter seçmeden de kullan</span></div>`
-                       : `<img src="${c.img}" alt="${c.n}" draggable="false">`;
-  ring.appendChild(d);
-  const b = document.createElement('button'); b.setAttribute('aria-label', c.n); b.onclick = () => { goTo(i); pauseAuto(); };
-  dotsEl.appendChild(b);
-  return d;
-});
-const dots = [...dotsEl.children];
+<div class="hero"><div class="w"><div>
+<span class="eye">Windows için Türkçe sesli asistan</span>
+<h1>Masaüstünde yaşayan asistanın: <em>Yumi</em></h1>
+<p class="lead">Adıyla seslen, konuş. Sayaç kurar, müzik açar, evindeki cihazları yönetir, sohbet eder. Sesini bilgisayarının içinde anlar ve sana kendi sesiyle cevap verir.</p>
+<a class="btn p" href="#indir">Ücretsiz indir</a><a class="btn s" href="#ozellikler">Neler yapar?</a>
+<p class="meta">Windows 10 / 11 · Ücretsiz · Reklamsız</p>
+</div><img src="gorseller/hero.png" alt="Masaüstünde Yumi"></div></div>
 
-let pos = 0, target = 0, vel = 0, dragging = false, lastX = 0, lastT = 0, moved = 0;
-const wrap = d => ((d % N) + N + N/2) % N - N/2;   // -N/2..N/2
+<div class="pill"><div class="w">
+<div><img src="gorseller/ikon_kilit.png"><p><b>Ses bilgisayarında işlenir</b><span>Ses tanıma ve ses üretimi yerelde çalışır.</span></p></div>
+<div><img src="gorseller/ikon_ucretsiz.png"><p><b>Ücretsiz ve reklamsız</b><span>Satış yok, abonelik yok, reklam yok.</span></p></div>
+<div><img src="gorseller/ikon_karakter.png"><p><b>İster karakterle, ister sade</b><span>3D karakter seç ya da modelsiz kullan.</span></p></div>
+</div></div>
 
-function stepSize(){ const W = stage.clientWidth, h = Math.min(stage.clientHeight * 0.70, 560); return W < 560 ? W * 0.29 : Math.min(W * 0.17, h * 0.42); }
-function layout(){
-  const W = stage.clientWidth, H = stage.clientHeight;
-  const h = Math.min(H * 0.70, 560);
-  stage.style.setProperty('--h', h + 'px');
-  const step = stepSize();
-  els.forEach((el,i) => {
-    const d = wrap(i - pos), a = Math.abs(d);
-    const x = Math.sign(d) * (a <= 1 ? a * step * 1.15 : step * 1.15 + (a - 1) * step * 0.88);
-    const s = Math.max(0.42, 1 - a * 0.2);
-    const br = Math.max(0.22, 1 - a * 0.36), sat = Math.max(0.35, 1 - a * 0.22);
-    el.style.transform = `translateX(calc(-50% + ${x}px)) translateY(${-a * h * 0.03}px) scale(${s})`;
-    el.style.filter = a < 0.05 ? 'none' : `brightness(${br}) saturate(${sat})`;
-    el.style.zIndex = String(100 - Math.round(a * 10));
-    el.style.opacity = a > (W < 560 ? 2.4 : 3.6) ? 0 : 1;
-  });
-  const c = ((Math.round(pos) % N) + N) % N;
-  if (nameEl.dataset.i !== String(c)) {
-    nameEl.dataset.i = c; nameEl.textContent = CHARS[c].n; subEl.textContent = CHARS[c].sub || SUB;
-    dots.forEach((b,i) => b.classList.toggle('on', i === c));
-  }
-}
+<section class="f" id="ozellikler"><div class="w">
+<h2 class="h2">Tek seslenişle, gün boyu yanında</h2><p class="sub">Yumi bir pencere değil; masaüstünde dolaşan, seni dinleyen ve işini yapan bir yardımcı.</p>
+<div class="grid">
+<div class="card"><img src="gorseller/ikon_ses.png"><h3>Sesli konuşma</h3><p>Adıyla seslen ve konuş. Seni bilgisayarındaki ses tanıma dinler, Yumi doğal bir Türkçe sesle cevap verir.</p></div>
+<div class="card"><img src="gorseller/ikon_yerel.png"><h3>Komutları yerelde anlar</h3><p>Alarm, sayaç, müzik, YouTube ve ev komutları internete gitmeden, doğrudan bilgisayarında anlaşılır.</p></div>
+<div class="card"><img src="gorseller/ikon_sohbet.png"><h3>Sohbet</h3><p>Merak ettiğini sor, fikir al, laflayın. Sohbet için Gemini ya da ChatGPT hesabını bağlarsın.</p></div>
+<div class="card"><img src="gorseller/ikon_ev.png"><h3>Akıllı ev</h3><p>Ağındaki cihazları bulur; ışıkları, prizleri ve televizyonu panelden ya da sesle yönetirsin.</p></div>
+<div class="card"><img src="gorseller/ikon_muzik.png"><h3>Müzik ve YouTube</h3><p>"Biraz caz aç" demen yeter. Tarayıcı eklentisiyle YouTube'da reklamlar kendiliğinden atlanır.</p></div>
+<div class="card"><img src="gorseller/ikon_karakter.png"><h3>3D karakterler</h3><p>Bir karakter seç: masaüstünde yürür, koltuğa oturur ve kendi sesiyle konuşur.</p></div>
+</div></div></section>
 
-function tick(){
-  if (!dragging) {
-    if (Math.abs(vel) > 0.0005) { target = Math.round(pos + vel * 10); vel = 0; }
-    pos += (target - pos) * 0.12;
-    if (Math.abs(target - pos) < 0.0005) pos = target;
-  }
-  layout(); requestAnimationFrame(tick);
-}
-function goTo(i){ const d = wrap(i - target); target = target + d; }
-function step(k){ target = Math.round(target) + k; }
+<section class="f alt"><div class="w">
+<h2 class="h2">Günlük hayatın içinde</h2><p class="sub">Elin doluyken bile bir cümle yeter.</p>
+<div class="grid">
+<div class="q"><small>Mutfakta</small><p>"Yumi, 9 dakika sonra haber ver."</p><span>Makarna ocaktayken sayaç kurulur; süre dolunca Yumi seslenir.</span></div>
+<div class="q"><small>Çalışırken</small><p>"Biraz caz aç."</p><span>Müzik açılır, reklamlar atlanır; sen işine devam edersin.</span></div>
+<div class="q"><small>Akşam</small><p>"Salonun ışığını kapat."</p><span>Ev panelinde eklediğin cihazlar sesinle açılıp kapanır.</span></div>
+</div></div></section>
 
-// Otomatik dönüş
-let autoTimer = null, resumeTimer = null;
-function startAuto(){ stopAuto(); autoTimer = setInterval(() => step(1), AUTO_MS); }
-function stopAuto(){ clearInterval(autoTimer); autoTimer = null; }
-function pauseAuto(){ stopAuto(); clearTimeout(resumeTimer); resumeTimer = setTimeout(startAuto, RESUME_MS); hideHint(); }
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+<section class="f dark" id="karakterler"><div class="w">
+<h2 class="h2">Karakterini seç ya da hiç seçme</h2><p class="sub">Her karakter kendi sesiyle konuşur. İstemezsen Yumi modelsiz, sade bir asistan olarak da çalışır.</p>
+<iframe class="car" src="carousel/" title="Yumi karakterleri" loading="lazy"></iframe>
+<noscript><img class="full" src="gorseller/karakterler.png" alt="Yumi karakterleri"></noscript>
+</div></section>
 
-// Sürükleme (fare + dokunma)
-stage.addEventListener('pointerdown', e => {
-  if (e.target.closest('button')) return;
-  dragging = true; moved = 0; lastX = e.clientX; lastT = performance.now(); vel = 0;
-  stage.classList.add('drag'); stage.setPointerCapture(e.pointerId); pauseAuto();
-});
-stage.addEventListener('pointermove', e => {
-  if (!dragging) return;
-  const dx = e.clientX - lastX, now = performance.now(), dt = Math.max(1, now - lastT);
-  const stepPx = stepSize() * 1.15;
-  pos -= dx / stepPx; target = pos; vel = (-dx / stepPx) / dt * 16 * 0.6 + vel * 0.4;
-  lastX = e.clientX; lastT = now; moved += Math.abs(dx);
-});
-const end = e => { if (!dragging) return; dragging = false; stage.classList.remove('drag'); if (moved < 4) vel = 0; target = Math.round(pos + vel * 10); vel = 0; };
-stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
-stage.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { e.preventDefault(); step(e.deltaX > 0 ? 1 : -1); pauseAuto(); } }, {passive:false});
-document.getElementById('prev').onclick = () => { step(-1); pauseAuto(); };
-document.getElementById('next').onclick = () => { step(1); pauseAuto(); };
-addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { step(-1); pauseAuto(); } if (e.key === 'ArrowRight') { step(1); pauseAuto(); } });
-stage.addEventListener('mouseenter', stopAuto); stage.addEventListener('mouseleave', () => { clearTimeout(resumeTimer); if (!reduce) startAuto(); });
-function hideHint(){ document.getElementById('hint').style.opacity = 0; }
-setTimeout(hideHint, 4000);
-addEventListener('resize', layout);
-document.addEventListener('visibilitychange', () => document.hidden ? stopAuto() : (!reduce && startAuto()));
+<div class="cta" id="indir"><div class="w">
+<h2 class="h2">Yumi'yi bugün dene</h2><p class="sub">Windows 10 ve 11 için ücretsiz. Microsoft Store sürümü yakında.</p>
+<a class="btn p" href="https://github.com/AEDogan/Yumi-v1.0-Setup/releases">Ücretsiz indir</a>
+</div></div>
 
-tick(); if (!reduce) startAuto();
-</script>
-</body>
-</html>
+<footer><div class="w"><span>© 2026 Yumi</span><span><a href="kvkk/">KVKK Aydınlatma Metni</a><a href="privacy-policy/">Privacy Policy</a><a href="kullanim-kosullari/">Kullanım Koşulları</a></span></div></footer>
+</body></html>
